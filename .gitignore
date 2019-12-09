@@ -1,0 +1,8 @@
+/dumps/
+/.idea/
+*.pyc
+__pycache__
+/htmlcov/
+.coverage
+drone
+.DS_Store

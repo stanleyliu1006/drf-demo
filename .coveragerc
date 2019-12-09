@@ -1,0 +1,13 @@
+[report]
+exclude_lines =
+    except ImportError as exc:
+    pragma: no cover
+
+[run]
+omit =
+    *migrations/*,
+    *settings*,
+    *tests/*,
+    *urls.py,
+    *main/*,
+    manage.py

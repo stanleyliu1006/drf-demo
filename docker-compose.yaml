@@ -1,0 +1,68 @@
+version: '3.5'
+volumes:
+  dbvol:
+  staticvol:
+
+networks:
+  default:
+    external:
+      name: front_default
+
+services:
+  reece-addressbook-api:
+    container_name: reece-addressbook-api
+    image: reece-addressbook-api
+    build: .
+    environment:
+      API_DB_HOST: reece-addressbook-db
+      API_DB_PORT: 5432
+      API_DB_USER: reece-addressbook
+      API_DB_PASS: reece-addressbook
+      API_DB_NAME: reece-addressbook
+      DB_INIT_DATA: "true"
+      VERSION: v1
+    volumes:
+      - ./apps/:/src/apps/
+      - ./main/:/src/main/
+      - ./htmlcov/:/src/htmlcov/
+      - .coveragerc:/src/.coveragerc
+      - staticvol:/src/staticfiles
+    depends_on:
+      - reece-addressbook-db
+    expose:
+      - 8007
+
+  reece-addressbook-db:
+    container_name: reece-addressbook-db
+    image: postgres:11.0
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: reece-addressbook
+      POSTGRES_USER: reece-addressbook
+      POSTGRES_DB: reece-addressbook
+    volumes:
+      - dbvol:/var/lib/postgresql/data
+
+  reece-addressbook-locust:
+    container_name: reece-addressbook-locust
+    build: locust
+    environment:
+      ADDRESSBOOK_API: http://reece-addressbook-api:8007
+    volumes:
+      - ./locust/:/src/locust/
+    depends_on:
+      - reece-addressbook-api
+    ports:
+      - "8089:8089"
+
+  reece-nginx:
+    container_name: reece-nginx
+    build: ./nginx
+    volumes:
+      - staticvol:/src/staticfiles
+    ports:
+      - 1337:80
+    depends_on:
+      - reece-addressbook-api
+
